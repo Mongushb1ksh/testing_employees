@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>Редактирование профиля</title>
+{% endblock %}
+
+{% block content %}
+      <h1>Редактирование профиля</h1>
+        <form method="POST">
+            {% csrf_token %}
+
+            <label>Логин (не редактируется):</label>
+            <input type="text" value="{{ user.username }}" disabled>
+
+            <label>Email:</label>
+            <input type="email" name="email" value="{{ user.email }}">
+
+            <label>Телефон:</label>
+            <input type="text" name="phone" value="{{ employee.phone|default:'' }}">
+
+            <button type="submit" class="btn">Сохранить</button>
+            <a href="{% url 'profile' %}" class="btn btn-secondary">Отмена</a>
+        </form>
+{% endblock %}

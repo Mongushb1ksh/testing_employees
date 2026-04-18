@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>Добавить вопрос</title>
+{% endblock %}
+
+{% block content %}
+<style>
+    h1 {
+        color: #1A206A;
+        font-size: 24px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .form-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 60vh;
+    }
+
+    form {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        max-width: 500px;
+        width: 100%;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        box-sizing: border-box;
+        resize: vertical;
+    }
+
+    textarea:focus {
+        outline: none;
+        border-color: #1A206A;
+        box-shadow: 0 0 5px rgba(26, 32, 106, 0.3);
+    }
+
+    button {
+        background: #1A206A;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 20px;
+        margin-right: 10px;
+    }
+
+    button:hover {
+        background: #2a3080;
+    }
+
+    a {
+        display: inline-block;
+        margin-top: 20px;
+        color: #1A206A;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+        form {
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+    }
+</style>
+
+<div class="form-wrapper">
+    <form method="POST">
+        {% csrf_token %}
+        <h1 style="margin-top: 0; text-align: center;">Добавить вопрос</h1>
+        <label>Текст вопроса:</label>
+        <textarea name="text" rows="5" required></textarea>
+
+        <button type="submit">Сохранить</button>
+        <a href="/manager/tests/{{ test.id }}/questions/">Отмена</a>
+    </form>
+</div>
+{% endblock %}

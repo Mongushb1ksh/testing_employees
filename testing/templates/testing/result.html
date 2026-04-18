@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>Результат теста</title>
+{% endblock %}
+
+{% block content %}
+<style>
+    h1 {
+        color: #1A206A;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    p {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .passed {
+        color: green;
+        font-size: 20px;
+        font-weight: bold;
+        background: #d4edda;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .failed {
+        color: red;
+        font-size: 20px;
+        font-weight: bold;
+        background: #f8d7da;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    h2 {
+        color: #1A206A;
+        font-size: 20px;
+        margin: 30px 0 15px 0;
+    }
+
+    .question-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .question-card.correct {
+        border-left: 4px solid green;
+    }
+
+    .question-card.incorrect {
+        border-left: 4px solid red;
+    }
+
+    .question-card p {
+        margin-bottom: 8px;
+    }
+
+    .user-answer {
+        color: #333;
+        font-size: 14px;
+    }
+
+    .correct-answer {
+        color: green;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+    a {
+        color: #1A206A;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+        h1 {
+            font-size: 20px;
+        }
+
+        .passed, .failed {
+            font-size: 16px;
+        }
+
+        .question-card {
+            padding: 12px;
+        }
+    }
+</style>
+    <h1>Результат теста: {{ test.name }}</h1>
+    <p>Вы набрали <strong>{{ percent }}%</strong> правильных ответов.</p>
+
+        {% if percent >= test.pass_percent %}
+            <p class="passed">ТЕСТ ПРОЙДЕН!</p>
+        {% else %}
+            <p class="failed">ТЕСТ НЕ ПРОЙДЕН</p>
+        {% endif %}
+
+    <h2>Детальный разбор:</h2>
+
+    {% for q in questions_data %}
+    <div class="question-card {% if q.is_correct %}correct{% else %}incorrect{% endif %}">
+        <p><strong>{{ forloop.counter }}. {{ q.text }}</strong></p>
+        <p class="user-answer">Ваш ответ: {{ q.user_answer_text }}</p>
+        {% if not q.is_correct %}
+            <p class="correct-answer">Правильный ответ: {{ q.correct_answer_text }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <br>
+    <a href="/tests/">К списку тестов</a>
+{% endblock %}

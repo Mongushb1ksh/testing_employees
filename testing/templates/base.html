@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title %}
+    <title>Система тестирования Тывасвязьинформ</title>
+    {% endblock %}
+
+    {% load static %}
+    <style>
+        @font-face {
+            font-family: 'Helvetica Neue';
+            src: url("{% static 'testing/fonts/HelveticaNeue-Regular.otf' %}") format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'Helvetica Neue';
+            src: url("{% static 'testing/fonts/HelveticaNeue-Bold.otf' %}") format('opentype');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f5f5;
+            font-family: 'Helvetica Neue', 'Segoe UI', -apple-system, Helvetica, Arial, sans-serif;
+            padding: 20px;
+        }
+
+        /* Остальные стили хедера... */
+        .header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header .logo img {
+            height: 50px;
+            width: auto;
+        }
+
+        .header .logo span {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1A206A;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+
+        .header .user-info {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .header .links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header .links a {
+            color: #1A206A;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .header .links a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .header .links {
+                justify-content: center;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        {% if user.is_authenticated %}
+        <div class="header">
+            <div class="logo">
+                <img src="{% static 'testing/images/logo.jpg' %}" alt="ТСИ" onerror="this.style.display='none'">
+                <span>Тывасвязьинформ</span>
+            </div>
+            <div class="user-info">
+                Вы вошли как <strong>{{ user.username }}</strong>
+            </div>
+            <div class="links">
+                <a href="/tests/">Мои тесты</a>
+                <a href="{% url 'profile' %}">Мой профиль</a>
+                <a href="{% url 'test_history' %}">История</a>
+                {% if user.is_staff %}
+                    <a href="/manager/">Панель руководителя</a>
+                {% endif %}
+                <a href="/logout/">Выйти</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="header">
+            <div class="logo">
+                <img src="{% static 'testing/images/logo.jpg' %}" alt="ТСИ" onerror="this.style.display='none'">
+                <span>Тывасвязьинформ</span>
+            </div>
+            <div class="links">
+                <a href="/">Вход</a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>Панель руководителя</title>
+{% endblock %}
+
+{% block content %}
+<style>
+    h1 {
+        color: #1A206A;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .stats {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        flex: 1;
+        min-width: 120px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .stat-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #1A206A;
+    }
+
+    .menu {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .menu a {
+        display: block;
+        padding: 15px;
+        background: #1A206A;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        text-align: center;
+        transition: background 0.3s ease;
+    }
+
+    .menu a:hover {
+        background: #2a3080;
+    }
+
+    @media (max-width: 600px) {
+        h1 {
+            font-size: 20px;
+        }
+
+        .stat-number {
+            font-size: 24px;
+        }
+
+        .stat-card {
+            padding: 15px;
+        }
+
+        .menu a {
+            padding: 12px;
+            font-size: 14px;
+        }
+    }
+</style>
+    <h1>Панель руководителя</h1>
+        <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ tests_count }}</div>
+            <div>Тестов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ questions_count }}</div>
+            <div>Вопросов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ assignments_count }}</div>
+            <div>Назначений</div>
+        </div>
+    </div>
+
+    <div class="menu">
+        <a href="/manager/tests/">Управление тестами</a>
+        <a href="/manager/assignments/">Назначение тестов</a>
+        <a href="/manager/results/">Результаты</a>
+        <a href="/tests/">Список тестов</a>
+    </div>
+
+{% endblock %}

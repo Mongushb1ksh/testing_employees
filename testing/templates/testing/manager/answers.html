@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>Ответы на вопрос</title>
+{% endblock %}
+
+{% block content %}
+<style>
+    h1 {
+        color: #1A206A;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    p {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+
+    .btn {
+        display: inline-block;
+        background: #1A206A;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        margin-right: 10px;
+        margin-bottom: 20px;
+    }
+
+    .btn:hover {
+        background: #2a3080;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-top: 10px;
+    }
+
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+    }
+
+    th {
+        background: #1A206A;
+        color: white;
+    }
+
+    tr:hover {
+        background: #f5f5f5;
+    }
+
+    .correct {
+        background: #d4edda;
+    }
+
+    a {
+        color: #1A206A;
+        text-decoration: none;
+        margin-right: 10px;
+    }
+
+    a:not(.btn):hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+        th, td {
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+    }
+</style>
+    <h1>Ответы на вопрос</h1>
+    <p><strong>Вопрос:</strong> {{ question.text }}</p>
+    <a href="/manager/answers/{{ question.id }}/create/">+ Добавить ответ</a>
+    <a href="/manager/tests/{{ question.test.id }}/questions/">← Назад</a>
+
+    <table>
+        <thead>
+            <tr><th>Текст ответа</th><th>Правильный</th><th>Действия</th></tr>
+        </thead>
+        <tbody>
+            {% for answer in answers %}
+            <tr class="{% if answer.is_correct %}correct{% endif %}">
+                <td>{{ answer.text }}</td>
+                <td>{% if answer.is_correct %}Да{% else %}Нет{% endif %}</td>
+                <td>
+                    <a href="/manager/answers/{{ answer.id }}/edit/">Изменить</a>
+                    <a href="/manager/answers/{{ answer.id }}/delete/">Удалить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

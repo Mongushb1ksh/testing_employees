@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>Мой профиль</title>
+{% endblock %}
+
+{% block content %}
+<style>
+    h1 {
+        color: #1A206A;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .info-row {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .label {
+        font-weight: bold;
+        width: 120px;
+        display: inline-block;
+        color: #333;
+    }
+
+    .value {
+        display: inline-block;
+        color: #666;
+    }
+
+    .btn {
+        display: inline-block;
+        background: #1A206A;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        margin-right: 10px;
+    }
+
+    .btn:hover {
+        background: #2a3080;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    a:not(.btn) {
+        color: #1A206A;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+    a:not(.btn):hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+        .label {
+            width: 100%;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            display: block;
+            margin-left: 0;
+        }
+
+        .btn {
+            display: block;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    }
+</style>
+
+      <h1>Мой профиль</h1>
+
+        <a href="{% url 'test_history' %}">История тестов</a>
+        <div class="info-row">
+            <span class="label">Логин:</span>
+            <span class="value">{{ user.username }}</span>
+        </div>
+
+        <div class="info-row">
+            <span class="label">Фамилия:</span>
+            <span class="value">{{ user.last_name|default:"—" }}</span>
+        </div>
+
+        <div class="info-row">
+            <span class="label">Имя:</span>
+            <span class="value">{{ user.first_name|default:"—" }}</span>
+        </div>
+
+        <div class="info-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ user.email|default:"—" }}</span>
+        </div>
+
+        <div class="info-row">
+            <span class="label">Отдел:</span>
+            <span class="value">{{ employee.department|default:"—" }}</span>
+        </div>
+
+        <div class="info-row">
+            <span class="label">Должность:</span>
+            <span class="value">{{ employee.position.name|default:"—" }}</span>
+        </div>
+
+        <div class="info-row">
+            <span class="label">Телефон:</span>
+            <span class="value">{{ employee.phone|default:"—" }}</span>
+        </div>
+
+        <div>
+            <a href="{% url 'profile_edit' %}" class="btn">Редактировать</a>
+            <a href="{% url 'change_password' %}" class="btn btn-secondary">Сменить пароль</a>
+            <a href="{% url 'test_list' %}" class="btn btn-secondary">Назад</a>
+        </div>
+{% endblock %}

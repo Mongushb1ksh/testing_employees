@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>{{ test.name }}</title>
+{% endblock %}
+
+{% block content %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .container h1 {
+        color: #1A206A;
+        font-size: 24px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    #timer {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: #dc3545;
+        background: #fff5f5;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .progress {
+        background: #e9ecef;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .question-box {
+        margin: 20px 0;
+    }
+
+    .question-text {
+        font-size: 18px;
+        margin-bottom: 20px;
+        color: #333;
+        line-height: 1.4;
+    }
+
+    .answers {
+        margin-left: 20px;
+    }
+
+    .answer-option {
+        margin: 12px 0;
+    }
+
+    .answer-option input {
+        margin-right: 10px;
+        transform: scale(1.1);
+        cursor: pointer;
+    }
+
+    .answer-option label {
+        font-size: 16px;
+        color: #333;
+        cursor: pointer;
+    }
+
+    .nav-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+        gap: 15px;
+    }
+
+    .nav-buttons button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    #prevBtn {
+        background: #6c757d;
+        color: white;
+    }
+
+    #prevBtn:hover:not(:disabled) {
+        background: #5a6268;
+    }
+
+    #prevBtn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    #nextBtn {
+        background: #1A206A;
+        color: white;
+    }
+
+    #nextBtn:hover {
+        background: #2a3080;
+    }
+
+    .btn-submit {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-submit:hover {
+        background: #218838;
+    }
+
+    .container a {
+        display: inline-block;
+        margin-top: 20px;
+        color: #1A206A;
+        text-decoration: none;
+    }
+
+    .container a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+        .container {
+            padding: 20px;
+        }
+
+        .question-text {
+            font-size: 16px;
+        }
+
+        .answer-option label {
+            font-size: 14px;
+        }
+
+        .nav-buttons button {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+    }
+</style>
+    <div class="container">
+        <h1>{{ test.name }}</h1>
+        {% if test.time_limit > 0 %}
+        <div id="timer" style="text-align: center; font-size: 24px; font-weight: bold; color: #dc3545; margin-bottom: 20px;">
+            Осталось времени: <span id="timerMinutes">00</span>:<span id="timerSeconds">00</span>
+        </div>
+        {% endif %}
+
+        <form method="POST" id="testForm">
+            {% csrf_token %}
+
+            <div id="progress" class="progress">
+                Вопрос <span id="currentQuestionNum">1</span> из <span id="totalQuestions">{{ questions|length }}</span>
+            </div>
+
+            <div id="questions-container">
+                {% for question in questions %}
+                <div class="question-box" data-question-id="{{ forloop.counter0 }}" id="question-{{ forloop.counter0 }}" style="display: none;">
+                    <div class="question-text">
+                        <strong>{{ forloop.counter }}. {{ question.text }}</strong>
+                    </div>
+                    <div class="answers">
+                        {% for answer in question.answers.all %}
+                        <div class="answer-option">
+                            <input type="radio"
+                                   name="question_{{ question.id }}"
+                                   value="{{ answer.id }}"
+                                   id="q{{ question.id }}_a{{ answer.id }}"
+                                   data-question-idx="{{ forloop.parentloop.counter0 }}">
+                            <label for="q{{ question.id }}_a{{ answer.id }}">{{ answer.text }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="nav-buttons">
+                <button type="button" id="prevBtn" disabled>Предыдущий</button>
+                <button type="button" id="nextBtn" class="btn">Следующий ▶</button>
+                <button type="submit" id="submitBtn" class="btn btn-submit" style="display: none;">Завершить тест</button>
+            </div>
+        </form>
+
+        <br>
+        <a href="/tests/">← Назад к списку тестов</a>
+    </div>
+    {% if test.time_limit > 0 %}
+    <script>
+        // Таймер
+        let totalSeconds = {{ test.time_limit }} * 60;
+        const timerElement = document.getElementById('timer');
+        const minutesSpan = document.getElementById('timerMinutes');
+        const secondsSpan = document.getElementById('timerSeconds');
+
+        function updateTimer() {
+            if (totalSeconds <= 0) {
+                // Время вышло — автоматически отправляем форму
+                document.getElementById('testForm').submit();
+                return;
+            }
+
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+
+            minutesSpan.textContent = String(minutes).padStart(2, '0');
+            secondsSpan.textContent = String(seconds).padStart(2, '0');
+
+            totalSeconds--;
+        }
+
+        setInterval(updateTimer, 1000);
+
+        // Сохраняем оставшееся время в localStorage
+        function saveTimer() {
+            localStorage.setItem('testTimer_{{ test.id }}', totalSeconds);
+        }
+
+        function loadTimer() {
+            const saved = localStorage.getItem('testTimer_{{ test.id }}');
+            if (saved && !isNaN(parseInt(saved))) {
+                totalSeconds = parseInt(saved);
+            }
+        }
+
+        loadTimer();
+        setInterval(saveTimer, 1000);
+
+        // Очищаем таймер при отправке
+        document.getElementById('testForm').addEventListener('submit', function() {
+            localStorage.removeItem('testTimer_{{ test.id }}');
+        });
+    </script>
+    {% endif %}
+    <script>
+
+        // Получаем все вопросы
+        const questions = document.querySelectorAll('.question-box');
+        const totalQuestions = questions.length;
+        let currentIndex = 0;
+
+        // Функция для сохранения ответов в localStorage
+        function saveAnswer(questionIdx, answerId) {
+            const answers = JSON.parse(localStorage.getItem('testAnswers_' + {{ test.id }}) || '{}');
+            answers[questionIdx] = answerId;
+            localStorage.setItem('testAnswers_' + {{ test.id }}, JSON.stringify(answers));
+        }
+
+        // Функция для загрузки сохранённых ответов
+        function loadSavedAnswers() {
+            const answers = JSON.parse(localStorage.getItem('testAnswers_' + {{ test.id }}) || '{}');
+            for (const [idx, answerId] of Object.entries(answers)) {
+                const radio = document.querySelector(`input[data-question-idx="${idx}"][value="${answerId}"]`);
+                if (radio) {
+                    radio.checked = true;
+                }
+            }
+        }
+
+        // Показать текущий вопрос
+        function showQuestion(index) {
+            // Скрыть все вопросы
+            questions.forEach((q, i) => {
+                q.style.display = 'none';
+            });
+            // Показать текущий
+            if (questions[index]) {
+                questions[index].style.display = 'block';
+            }
+
+            // Обновить номер вопроса
+            document.getElementById('currentQuestionNum').innerText = index + 1;
+
+            // Обновить состояние кнопок
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            prevBtn.disabled = (index === 0);
+
+            if (index === totalQuestions - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        // Сохранить ответ при выборе радио-кнопки
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const questionIdx = parseInt(this.getAttribute('data-question-idx'));
+                saveAnswer(questionIdx, this.value);
+            });
+        });
+
+        // Кнопка "Следующий"
+        const nextBtn = document.getElementById('nextBtn');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                if (currentIndex < totalQuestions - 1) {
+                    currentIndex++;
+                    showQuestion(currentIndex);
+                }
+            });
+        }
+
+        // Кнопка "Предыдущий"
+        const prevBtn = document.getElementById('prevBtn');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    showQuestion(currentIndex);
+                }
+            });
+        }
+
+        // Загрузить сохранённые ответы при загрузке страницы
+        loadSavedAnswers();
+
+        // Показать первый вопрос
+        if (totalQuestions > 0) {
+            showQuestion(0);
+        }
+
+        // Очистить localStorage при отправке формы
+        const testForm = document.getElementById('testForm');
+        if (testForm) {
+            testForm.addEventListener('submit', function() {
+                localStorage.removeItem('testAnswers_' + {{ test.id }});
+            });
+        }
+    </script>
+{% endblock %}

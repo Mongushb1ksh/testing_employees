@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>Вход в систему</title>
+{% endblock %}
+
+{% block content %}
+<style>
+    .login-container {
+        max-width: 400px;
+        margin: 100px auto;
+        padding: 30px;
+        background: white;
+        text-align: center;
+    }
+
+    .login-container h1 {
+        color: #1A206A;
+        font-size: 24px;
+        margin: 20px 0;
+    }
+
+    .error {
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    form input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #1A206A;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    form input:focus {
+        outline: none;
+        border-color: #1A206A;
+        box-shadow: 0 0 5px rgba(26, 32, 106, 0.3);
+    }
+
+    form button {
+        width: 100%;
+        padding: 12px;
+        background: #1A206A;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    form button:hover {
+        background: #2a3080;
+    }
+        @media (max-width: 480px) {
+        .login-container {
+            padding: 20px 15px;
+        }
+
+        .login-container h1 {
+            font-size: 20px;
+        }
+
+        form input {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        form button {
+            padding: 10px;
+            font-size: 14px;
+        }
+    }
+</style>
+
+    <div class="login-container">
+        {% load static %}
+        <img src="{% static 'testing/images/logo.jpg' %}" alt="Тывасвязьинформ" style="height: 150px;">
+        <h1>Система тестирования</h1>
+        {% if form.errors %}
+            <div class="error">
+                Неверное имя пользователя или пароль
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Имя пользователя" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+            <button type="submit">Войти</button>
+        </form>
+    </div>
+{% endblock %}

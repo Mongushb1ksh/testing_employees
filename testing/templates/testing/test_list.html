@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>Список тестов</title>
+{% endblock %}
+
+{% block content %}
+
+<style>
+    h1 {
+        color: #1A206A;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+
+    .test-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-left: 4px solid #1A206A;
+    }
+
+    .test-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #1A206A;
+        margin-bottom: 10px;
+    }
+
+    .test-info {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .test-info span {
+        color: #dc2626;
+    }
+
+    .btn {
+        display: inline-block;
+        background: #1A206A;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+    .btn:hover {
+        background: #2a3080;
+    }
+
+    .no-tests {
+        background: white;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        color: #666;
+    }
+
+    .no-tests p {
+        margin-bottom: 10px;
+    }
+</style>
+<h1>Доступные тесты</h1>
+
+{% if tests %}
+    {% for test in tests %}
+        <div class="test-card">
+            <div class="test-title">{{ test.name }}</div>
+            {% if test.deadline %}
+                <div class="test-info">
+                    Срок до: {{ test.deadline|date:"d.m.Y H:i" }}
+                    {% if test.deadline < now %}
+                        <span>(просрочен)</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+            {% if test.max_attempts > 0 %}
+                <div class="test-info">Попыток осталось: {{ test.remaining_attempts }} из {{ test.max_attempts }}</div>
+            {% else %}
+                <div class="test-info">Без ограничения попыток</div>
+            {% endif %}
+            <a href="/test/{{ test.id }}/" class="btn">Пройти тест →</a>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="no-tests">
+        <p>Вам пока не назначено ни одного теста.</p>
+        <p>Обратитесь к руководителю.</p>
+    </div>
+{% endif %}
+{% endblock %}

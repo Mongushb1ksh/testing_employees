@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}
+<title>Создать тест</title>
+{% endblock %}
+
+{% block content %}
+<style>
+    h1 {
+        color: #1A206A;
+        font-size: 24px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .form-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+    }
+
+    form {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        max-width: 500px;
+        width: 100%;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-top: 15px;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: #1A206A;
+        box-shadow: 0 0 5px rgba(26, 32, 106, 0.3);
+    }
+
+    small {
+        display: block;
+        margin-top: 5px;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .btn {
+        display: inline-block;
+        background: #1A206A;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        margin-top: 20px;
+        margin-right: 10px;
+    }
+
+    .btn:hover {
+        background: #2a3080;
+    }
+
+    a {
+        display: inline-block;
+        margin-top: 20px;
+        color: #1A206A;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+        form {
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+    }
+</style>
+    <h1 style="text-align: center;">Создать тест</h1>
+
+<div class="form-wrapper">
+    <form method="POST">
+        {% csrf_token %}
+        <label>Название теста:</label>
+        <input type="text" name="name" required>
+
+        <label>Категория:</label>
+        <select name="category_id">
+            <option value="">Без категории</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Целевая должность:</label>
+        <select name="target_position_id">
+            <option value="">-- Для всех должностей --</option>
+            {% for position in positions %}
+                <option value="{{ position.id }}" {% if test.target_position.id == position.id %}selected{% endif %}>
+                    {{ position.name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label>Максимальное количество попыток:</label>
+        <input type="number" name="max_attempts" value="1" min="0">
+        <small>0 — без ограничений, 1 — только одна попытка</small>
+
+        <label>Лимит времени (минуты):</label>
+        <input type="number" name="time_limit" value="0" min="0">
+        <small>0 — без ограничений</small>
+
+        <label>Проходной балл (%):</label>
+        <input type="number" name="pass_percent" value="70" min="0" max="100">
+
+        <button type="submit" class="btn">Сохранить</button>
+        <a href="/manager/tests/">Отмена</a>
+    </form>
+</div>
+{% endblock %}
