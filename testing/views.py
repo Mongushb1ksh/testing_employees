@@ -4,7 +4,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.utils import timezone
-from .models import Test, Question, Answer, Employee, TestAssignment, Category, Position
+from .models import Test, Question, Answer, Employee, TestAssignment, Category, Position, TestAttempt
 from .services import TestService, EmployeeService, ManagerService
 from .constants import MSG_LOGIN_ERROR
 
@@ -38,12 +38,12 @@ def logout_view(request):
 def test_list(request):
     employee = EmployeeService.get_employee_by_user(request.user)
     tests = EmployeeService.get_assigned_tests(employee)
-    now = timezone.now()
+
 
     for test in tests:
-        test.remaining_attempts = test.max_attempts - TestService.get_attempts_count(employee, test)
+        test.remaining_attempts = TestService.get_remaining_attempts(employee, test)
         test.can_take = TestService.can_take_test(employee, test)
-
+    now = timezone.now()
     return render(request, 'testing/test_list.html', {'tests': tests, 'now': now })
 
 
@@ -55,6 +55,7 @@ def take_test(request, test_id):
     employee = EmployeeService.get_employee_by_user(request.user)
     assignment = EmployeeService.get_assignment(employee, test)
 
+    # Проверка: можно ли пройти тест (не превышены ли попытки)
     if not TestService.can_take_test(employee, test):
         return render(request, 'testing/error.html', {
             'message': f'Вы исчерпали лимит попыток для теста «{test.name}». Максимум: {test.max_attempts} попыт(ок/и).'
@@ -62,19 +63,24 @@ def take_test(request, test_id):
 
     if request.method == 'POST':
         from .services import AnswerService
-        attempt_id = AnswerService.save_user_answers(request.user, test, request.POST)
+
+        attempt = TestService.create_attempt(assignment)
+
+        AnswerService.save_user_answers(request.user, test, request.POST, attempt)
 
         percent = TestService.calculate_score(test, request.POST)
+        is_passed = percent >= test.pass_percent
 
-        if assignment:
-            TestService.complete_assignment(employee, test, percent, test.pass_percent)
+        TestService.complete_attempt(attempt, percent, is_passed)
 
-            if percent >= test.pass_percent:
-                assignment.is_completed = True
-                assignment.completed_at = timezone.now()
-                assignment.save()
 
-        user_answers = AnswerService.get_user_answers_for_attempt(attempt_id)
+        if assignment and is_passed:
+            assignment.is_completed = True
+            assignment.completed_at = timezone.now()
+            assignment.save()
+
+        # Получаем детальные ответы
+        user_answers = AnswerService.get_user_answers_for_attempt(attempt.id)
 
         questions_data = []
         for question in questions:

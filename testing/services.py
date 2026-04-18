@@ -1,13 +1,13 @@
 from .models import Test, Question, Answer, Employee, TestAssignment, UserAnswer
 from django.contrib.auth.models import User
 from django.utils import timezone
-import time
-from .models import UserAnswer, Category
+from django.db.models import Count, Q
+from .models import UserAnswer, Category, TestAttempt
+
 
 class TestService:
     @staticmethod
     def calculate_score(test, user_answers):
-
         questions = test.questions.all()
         score = 0
         total = 0
@@ -40,21 +40,45 @@ class TestService:
         return False
 
     @staticmethod
+    def create_attempt(assignment):
+        return TestAttempt.objects.create(assignment=assignment)
+
+    @staticmethod
+    def complete_attempt(attempt, score_percent, is_passed):
+        attempt.completed_at = timezone.now()
+        attempt.score_percent = score_percent
+        attempt.is_passed = is_passed
+        attempt.save()
+        return attempt
+
+    @staticmethod
     def get_attempts_count(employee, test):
-        return TestAssignment.objects.filter(employee=employee, test=test, is_completed=True).count()
+        return TestAttempt.objects.filter(
+            assignment__employee=employee,
+            assignment__test=test
+        ).count()
+
+
+    @staticmethod
+    def get_remaining_attempts(employee, test):
+        if test.max_attempts == 0:
+            return float('inf')
+        attempts_count = TestService.get_attempts_count(employee, test)
+        return max(0, test.max_attempts - attempts_count)
+
 
     @staticmethod
     def can_take_test(employee, test):
         if test.max_attempts == 0:
             return True
-        attempts = TestService.get_attempts_count(employee, test)
-        return attempts < test.max_attempts
+        attempts_count = TestService.get_attempts_count(employee, test)
+        return attempts_count < test.max_attempts
 
 class EmployeeService:
     @staticmethod
     def get_employee_by_user(user):
         try:
-            return Employee.objects.get(user=user)
+            return Employee.objects.select_related('position').get(user=user)
         except Employee.DoesNotExist:
             return None
 
@@ -62,26 +86,18 @@ class EmployeeService:
     def get_assigned_tests(employee):
 
         if not employee:
-            return []
-        direct_assignments = TestAssignment.objects.filter(employee=employee, test__is_published=True)
-        direct_tests = [a.test for a in direct_assignments]
+            return Test.objects.none()
 
-        position_tests = []
-        if employee.position:
-            position_tests = Test.objects.filter(
-                is_published=True,
-                target_position=employee.position
-            )
 
-        all_tests = list(set(direct_tests + list(position_tests)))
-        return all_tests
+        return Test.objects.filter(
+            Q(testassignment__employee=employee) | Q(target_position=employee.position),
+            is_published=True
+        ).distinct().select_related('category', 'target_position')
 
     @staticmethod
     def get_assignment(employee, test):
-        try:
-            return TestAssignment.objects.filter(test=test, employee=employee).first()
-        except Exception:
-            return None
+
+        return TestAssignment.objects.filter(test=test, employee=employee).select_related('test').first()
 
 
 class ManagerService:
@@ -97,8 +113,7 @@ class ManagerService:
 
 class AnswerService:
     @staticmethod
-    def save_user_answers(user, test, user_answers_dict):
-        attempt_id = int(time.time())
+    def save_user_answers(user, test, user_answers_dict, attempt):
 
         for question_id_str, answer_id in user_answers_dict.items():
             if not answer_id:
@@ -112,7 +127,7 @@ class AnswerService:
                 is_correct = answer.is_correct
 
                 UserAnswer.objects.create(
-                    attempt_id=attempt_id,
+                    attempt_id=attempt.id,
                     user=user,
                     question=question,
                     selected_answer=answer,
@@ -121,10 +136,47 @@ class AnswerService:
             except (Question.DoesNotExist, Answer.DoesNotExist, ValueError):
                 continue
 
-        return attempt_id
-
     @staticmethod
     def get_user_answers_for_attempt(attempt_id):
-        return UserAnswer.objects.filter(attempt_id=attempt_id).select_related('question', 'selected_answer')
+        return UserAnswer.objects.filter(attempt_id=attempt_id).select_related(
+            'question', 'selected_answer'
+        )
 
+    @staticmethod
+    def get_user_answers_for_attempt_with_details(attempt_id):
+        return UserAnswer.objects.filter(attempt_id=attempt_id).select_related(
+            'question', 'selected_answer', 'question__test'
+        )
 
+    @staticmethod
+    def create_attempt(assignment):
+        return TestAttempt.objects.create(assignment=assignment)
+
+    @staticmethod
+    def complete_attempt(attempt, score_percent, is_passed):
+        attempt.completed_at = timezone.now()
+        attempt.score_percent = score_percent
+        attempt.is_passed = is_passed
+        attempt.save()
+        return attempt
+
+    @staticmethod
+    def get_attempts_count(employee, test):
+        return TestAttempt.objects.filter(
+            assignment__employee=employee,
+            assignment__test=test
+        ).count()
+
+    @staticmethod
+    def get_remaining_attempts(employee, test):
+        if test.max_attempts == 0:
+            return float('inf')  # Без ограничений
+        attempts_count = TestService.get_attempts_count(employee, test)
+        return max(0, test.max_attempts - attempts_count)
+
+    @staticmethod
+    def can_take_test(employee, test):
+        if test.max_attempts == 0:
+            return True
+        attempts_count = TestService.get_attempts_count(employee, test)
+        return attempts_count < test.max_attempts
